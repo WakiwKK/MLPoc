@@ -1,0 +1,33 @@
+FROM python:3.9.18-slim
+
+WORKDIR /mlflow
+
+RUN pip install mlflow
+RUN pip install boto3
+
+ENV BACKEND_URI sqlite:///mlflow.db
+
+ENV AWS_ACCESS_KEY_ID=ASIAQXK6Y467PGJAXS5S
+ENV AWS_SECRET_ACCESS_KEY=XH0W1yEgKTJvBp4ABCbuzyXJg/bSl5UVjF2G5lRJ
+ENV MLFLOW_S3_BUCKET_NAME=s3://ss-datalake-dev
+ENV MLFLOW_S3_BUCKET_ROOT_PATH=/mlflow/
+ENV MLFLOW_S3_ENDPOINT_URL=https://s3.amazonaws.com/
+
+# RUN mlflow artifacts sed --set-aws \
+#     --access-key-id $AWS_ACCESS_KEY_ID \
+#     --secret-access-key $AWS_SECRET_ACCESS_KEY \
+#     --endpoint-url $MLFLOW_S3_ENDPOINT_URL \
+#     --region ap-southeast-1
+
+# RUN mlflow server \
+#     --host 0.0.0.0 \
+#     --port 5000 \
+#     --artifacts-destination s3://ss-datalake-dev/mlflow/
+
+RUN echo "backend-store-uri = sqlite:///mlflow.db" > /root/.mlflow 
+
+ENV MLFLOW_TRACKING_URI="http://127.0.0.1:5000"
+
+EXPOSE 5000 
+
+CMD mlflow ui --backend-store-uri $BACKEND_URI --default-artifact-root $MLFLOW_S3_BUCKET_NAME  --host 0.0.0.0 --port 5000
